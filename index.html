@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Supply Chain Complexity Assessment</title>
+    <meta
+      name="description"
+      content="Simple tool to compute horizontal, vertical, and combined supply-chain complexity."
+    />
+    <style>
+      :root {
+        --bg: #5f83f9;
+        --card: #121a33;
+        --text: #e7ecf7;
+        --muted: #a7b0c2;
+        --accent: #69b1ff;
+        --ok: #7cf29a;
+        --warn: #ffd36e;
+        --bad: #ff6b6b;
+        --line: #253059;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        --radius: 18px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Arial;
+        background: radial-gradient(
+            1200px 700px at 10% -10%,
+            #1e2a5a44,
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+
+      /* Header */
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+      .title {
+        font-size: clamp(22px, 2.2vw, 28px);
+        font-weight: 800;
+        letter-spacing: 0.3px;
+      }
+
+      /*  Responsive logo layout  */
+      .logo-strip {
+        display: flex;
+        flex-direction: column; /* two rows on mobile */
+        gap: 10px;
+        padding: 10px 14px;
+        background: #e8eaf1;
+        border: 1px solid #f0f1f6;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+      }
+      .logo-group {
+        display: flex;
+        align-items: center;
+        justify-content: center; /* centered rows on mobile */
+        gap: 14px;
+        flex-wrap: nowrap; /* keep partners together per row */
+      }
+      .logo-group img {
+        display: block;
+        height: clamp(26px, 3.8vw, 48px);
+        width: auto;
+        object-fit: contain;
+        max-width: 100%;
+      }
+
+      /* Large screens: one horizontal row (side-by-side) */
+      @media (min-width: 900px) {
+        .logo-strip {
+          flex-direction: row;
+          justify-content: flex-start;
+          flex-wrap: nowrap;
+          gap: 18px;
+        }
+        .logo-group {
+          justify-content: flex-start;
+          gap: 18px;
+        }
+        .logo-group img {
+          height: clamp(32px, 2.6vw, 56px);
+        }
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+      }
+      .card {
+        background: linear-gradient(180deg, #152046, #101733);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+      .col-7 {
+        grid-column: span 7;
+      }
+      .col-5 {
+        grid-column: span 5;
+      }
+      @media (max-width: 900px) {
+        .col-7,
+        .col-5 {
+          grid-column: 1/-1;
+        }
+      }
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: 2px;
+      }
+      .input {
+        width: 100%;
+        background: #0c1330;
+        border: 1px solid #23305f;
+        color: var(--text);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 16px;
+        outline: none;
+        transition: border 0.15s ease, box-shadow 0.15s ease;
+      }
+      .input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(105, 177, 255, 0.15);
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        appearance: none;
+        border: 1px solid #2a3a6f;
+        background: #17214b;
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.05s ease, filter 0.15s ease, border 0.15s ease;
+      }
+      .btn:hover {
+        filter: brightness(1.1);
+        border-color: var(--accent);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #2a68ff, #1747bd);
+        border-color: #2a68ff;
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+
+      .kpi {
+        background: #0d1536;
+        border: 1px solid #273569;
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .kpi .label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .kpi .value {
+        font-size: 28px;
+        font-weight: 900;
+        margin-top: 4px;
+      }
+      .kpi .ok {
+        color: var(--ok);
+      }
+      .kpi .warn {
+        color: var(--warn);
+      }
+      .kpi .bad {
+        color: var(--bad);
+      }
+      .def {
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .error {
+        color: #ffd5d5;
+        background: #2a0f16;
+        border: 1px solid #a33;
+        padding: 8px 10px;
+        border-radius: 10px;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .invalid {
+        border-color: #ff8a8a !important;
+        box-shadow: 0 0 0 3px rgba(255, 106, 106, 0.18) !important;
+      }
+
+      footer {
+        margin-top: 26px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- HEADER (two-row mobile layout, one-row desktop) -->
+      <header>
+        <div class="logo-strip" role="group" aria-label="Partner logos">
+          <!-- Group A: unibz + iNEST + EU -->
+          <div class="logo-group">
+            <!--<img src="assets/unibz.png" alt="unibz logo" />-->
+            <img src="assets/logo-1.png" alt="iNEST logo" />
+            <img
+              src="assets/logo-2.png"
+              alt="Finanziato dall'Unione europea — NextGenerationEU logo"
+            />
+          </div>
+          <!-- Group B: MUR + ItaliaDomani (logo-3 and logo-4 together) -->
+          <div class="logo-group">
+            <img
+              src="assets/logo-3.png"
+              alt="Ministero dell'Università e della Ricerca logo"
+            />
+            <img src="assets/logo-4.png" alt="Italia Domani — PNRR logo" />
+          </div>
+        </div>
+
+        <div class="title">Supply Chain Complexity Assessment</div>
+      </header>
+
+      <!-- ===== MAIN ===== -->
+      <div class="grid" role="main">
+        <!-- Left: Form -->
+        <section class="card col-7" aria-labelledby="formTitle">
+          <h2 id="formTitle" class="sr">Input form</h2>
+
+          <form id="complexityForm" novalidate>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px"
+            >
+              <div>
+                <label for="suppliers">First-tier suppliers</label>
+                <input
+                  class="input"
+                  id="suppliers"
+                  name="suppliers"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  step="1"
+                  placeholder="e.g., 12"
+                  required
+                  aria-describedby="supHint supErr"
+                />
+                <div id="supHint" class="hint">
+                  How many direct suppliers supply your product?
+                </div>
+                <div id="supErr" class="error" hidden></div>
+              </div>
+              <div>
+                <label for="customers">First-tier customers</label>
+                <input
+                  class="input"
+                  id="customers"
+                  name="customers"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  step="1"
+                  placeholder="e.g., 8"
+                  required
+                  aria-describedby="cusHint cusErr"
+                />
+                <div id="cusHint" class="hint">
+                  How many direct (first-tier) customers do you serve?
+                </div>
+                <div id="cusErr" class="error" hidden></div>
+              </div>
+            </div>
+
+            <div style="margin-top: 16px">
+              <label for="tiers">Number of tiers (raw → end user)</label>
+              <input
+                class="input"
+                id="tiers"
+                name="tiers"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                step="1"
+                placeholder="e.g., 4"
+                required
+                aria-describedby="tierHint tierErr"
+              />
+              <div id="tierHint" class="hint">
+                Vertical complexity = number of sequential layers in your chain
+                (≥ 1).
+              </div>
+              <div id="tierErr" class="error" hidden></div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" type="submit">Calculate</button>
+              <button class="btn ghost" type="reset">Reset</button>
+              <button class="btn" id="sampleBtn" type="button">
+                Use sample data
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Right: Results -->
+        <aside class="card col-5" aria-live="polite" aria-atomic="true">
+          <h3 style="margin: 0 0 8px 0">Results</h3>
+          <div id="resultsEmpty" class="def">
+            Enter values and click <b>Calculate</b> to see your metrics.<br />
+            <b>Horizontal</b> counts suppliers + customers;
+            <b>Vertical</b> equals tiers.
+          </div>
+          <div id="results" style="display: none; gap: 12px; display: grid">
+            <div class="kpi">
+              <div class="label">Horizontal Complexity (C<sub>h</sub>)</div>
+              <div class="value" id="outCh">—</div>
+              <div class="def">C<sub>h</sub> = suppliers + customers</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Vertical Complexity (C<sub>v</sub>)</div>
+              <div class="value" id="outCv">—</div>
+              <div class="def">C<sub>v</sub> = number of tiers</div>
+            </div>
+            <div class="kpi">
+              <div class="label">Combined Index (C)</div>
+              <div class="value" id="outC">—</div>
+              <div class="def">C = C<sub>h</sub> + C<sub>v</sub></div>
+            </div>
+            <div class="def" id="echo"></div>
+            <div class="actions">
+              <button class="btn" id="copyBtn" type="button">
+                Copy results
+              </button>
+            </div>
+          </div>
+          <div
+            id="copyToast"
+            class="pill"
+            style="margin-top: 10px; display: none"
+          >
+            Copied!
+          </div>
+        </aside>
+      </div>
+
+      <footer>
+        <div>
+          © <span id="year"></span> • SCAssessmenTool/iNEST Project
+          Funding/Young Research/UNIBZ
+        </div>
+
+        <div>
+          Contact:
+          <a
+            href="mailto:your.name@domain.com
+  ?subject=Support%20request
+  &body=Hi%2C%0A%0AWe%27re%20using%20the%20complexity%20tool..."
+            >mteshome@unibz.it</a
+          >
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+      const form = $("#complexityForm");
+      const fields = {
+        suppliers: {
+          el: $("#suppliers"),
+          err: $("#supErr"),
+          min: 0,
+          label: "First-tier suppliers",
+        },
+        customers: {
+          el: $("#customers"),
+          err: $("#cusErr"),
+          min: 0,
+          label: "First-tier customers",
+        },
+        tiers: { el: $("#tiers"), err: $("#tierErr"), min: 1, label: "Tiers" },
+      };
+      const resultsBox = $("#results");
+      const resultsEmpty = $("#resultsEmpty");
+      const outCh = $("#outCh"),
+        outCv = $("#outCv"),
+        outC = $("#outC"),
+        echo = $("#echo");
+      const copyBtn = $("#copyBtn"),
+        toast = $("#copyToast");
+      const sampleBtn = $("#sampleBtn");
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      function parseIntStrict(inputEl, min, label, errEl) {
+        const raw = inputEl.value.trim();
+        let msg = "";
+        if (raw === "") msg = `${label} is required.`;
+        const num = Number(raw);
+        if (!msg && (!Number.isFinite(num) || !Number.isInteger(num)))
+          msg = `${label} must be an integer.`;
+        if (!msg && num < min) msg = `${label} must be ≥ ${min}.`;
+
+        if (msg) {
+          inputEl.classList.add("invalid");
+          inputEl.setAttribute("aria-invalid", "true");
+          errEl.hidden = false;
+          errEl.textContent = msg;
+          return { ok: false };
+        } else {
+          inputEl.classList.remove("invalid");
+          inputEl.removeAttribute("aria-invalid");
+          errEl.hidden = true;
+          errEl.textContent = "";
+          return { ok: true, value: num };
+        }
+      }
+
+      function compute() {
+        const s = parseIntStrict(
+          fields.suppliers.el,
+          fields.suppliers.min,
+          fields.suppliers.label,
+          fields.suppliers.err
+        );
+        const c = parseIntStrict(
+          fields.customers.el,
+          fields.customers.min,
+          fields.customers.label,
+          fields.customers.err
+        );
+        const t = parseIntStrict(
+          fields.tiers.el,
+          fields.tiers.min,
+          fields.tiers.label,
+          fields.tiers.err
+        );
+
+        if (!s.ok || !c.ok || !t.ok) {
+          resultsBox.style.display = "none";
+          resultsEmpty.style.display = "block";
+          return;
+        }
+
+        const Ch = s.value + c.value;
+        const Cv = t.value;
+        const C = Ch + Cv;
+
+        outCh.textContent = Ch;
+        outCv.textContent = Cv;
+        outC.textContent = C;
+        echo.innerHTML = `Inputs → suppliers: <b>${s.value}</b>, customers: <b>${c.value}</b>, tiers: <b>${t.value}</b>.`;
+
+        resultsEmpty.style.display = "none";
+        resultsBox.style.display = "grid";
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        compute();
+        const firstInvalid = form.querySelector(".invalid");
+        if (firstInvalid) firstInvalid.focus();
+      });
+
+      form.addEventListener("reset", () => {
+        setTimeout(() => {
+          Object.values(fields).forEach(({ el, err }) => {
+            el.classList.remove("invalid");
+            el.removeAttribute("aria-invalid");
+            err.hidden = true;
+            err.textContent = "";
+          });
+          resultsBox.style.display = "none";
+          resultsEmpty.style.display = "block";
+        }, 0);
+      });
+
+      // Live update as users type
+      Object.values(fields).forEach(({ el }) =>
+        el.addEventListener("input", () => {
+          if (Object.values(fields).every(({ el }) => el.value.trim() !== ""))
+            compute();
+        })
+      );
+
+      copyBtn.addEventListener("click", async () => {
+        const payload = {
+          Ch: Number(outCh.textContent || 0),
+          Cv: Number(outCv.textContent || 0),
+          C: Number(outC.textContent || 0),
+          inputs: {
+            suppliers: Number(fields.suppliers.el.value || 0),
+            customers: Number(fields.customers.el.value || 0),
+            tiers: Number(fields.tiers.el.value || 0),
+          },
+        };
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+          toast.textContent = "Copied!";
+          toast.style.display = "inline-block";
+          setTimeout(() => (toast.style.display = "none"), 1200);
+        } catch (e) {
+          alert("Copy failed. You can copy the values manually.");
+        }
+      });
+
+      sampleBtn.addEventListener("click", () => {
+        fields.suppliers.el.value = 12;
+        fields.customers.el.value = 8;
+        fields.tiers.el.value = 4;
+        compute();
+      });
+    </script>
+  </body>
+</html>
