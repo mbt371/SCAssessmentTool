@@ -8,3 +8,6 @@ Why it matters: High horizontal complexity increases coordination effort, invent
 Definition: The number of sequential tiers/layers from raw materials to end customer.
 Why it matters: Deeper chains amplify lead times, bullwhip effects, and visibility challenges.
 
+3. Spatial complexity
+Definition: The geographic dispersion of first-tier partners often measured as the number of countries (or regions) in which suppliers and customers are located.
+   Why it matters: Greater dispersion increases coordination effort and exposure to cross-border risks such as customs delays, geopolitical disruptions, currency volatility, and regulatory differences.
