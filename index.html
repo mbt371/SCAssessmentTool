@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -27,13 +27,15 @@
       }
       body {
         margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
           Arial;
-        background: radial-gradient(
-            1200px 700px at 10% -10%,
-            #1e2a5a44,
-            transparent 60%
-          ),
+        background:
+          radial-gradient(1200px 700px at 10% -10%, #1e2a5a44, transparent 60%),
           var(--bg);
         color: var(--text);
       }
@@ -80,6 +82,16 @@
         width: auto;
         object-fit: contain;
         max-width: 100%;
+      }
+      .pill {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #0d1536;
+        color: var(--ok);
+        font-weight: 700;
+        font-size: 13px;
       }
 
       /* Large screens: one horizontal row (side-by-side) */
@@ -143,7 +155,9 @@
         padding: 12px 14px;
         font-size: 16px;
         outline: none;
-        transition: border 0.15s ease, box-shadow 0.15s ease;
+        transition:
+          border 0.15s ease,
+          box-shadow 0.15s ease;
       }
       .input:focus {
         border-color: var(--accent);
@@ -164,7 +178,10 @@
         padding: 10px 14px;
         font-weight: 700;
         cursor: pointer;
-        transition: transform 0.05s ease, filter 0.15s ease, border 0.15s ease;
+        transition:
+          transform 0.05s ease,
+          filter 0.15s ease,
+          border 0.15s ease;
       }
       .btn:hover {
         filter: brightness(1.1);
@@ -282,6 +299,9 @@
             >
               <div>
                 <label for="suppliers">First-tier suppliers</label>
+                <div id="supHint" class="hint">
+                  How many direct suppliers supply your product?
+                </div>
                 <input
                   class="input"
                   id="suppliers"
@@ -294,13 +314,14 @@
                   required
                   aria-describedby="supHint supErr"
                 />
-                <div id="supHint" class="hint">
-                  How many direct suppliers supply your product?
-                </div>
+
                 <div id="supErr" class="error" hidden></div>
               </div>
               <div>
                 <label for="customers">First-tier customers</label>
+                <div id="cusHint" class="hint">
+                  How many direct customers do you serve?
+                </div>
                 <input
                   class="input"
                   id="customers"
@@ -313,15 +334,69 @@
                   required
                   aria-describedby="cusHint cusErr"
                 />
-                <div id="cusHint" class="hint">
-                  How many direct (first-tier) customers do you serve?
-                </div>
+
                 <div id="cusErr" class="error" hidden></div>
+              </div>
+            </div>
+
+            <!-- Spatial complexity inputs -->
+            <div style="margin-top: 16px">
+              <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px"
+              >
+                <div>
+                  <label for="supCountries"
+                    >First-tier supplier countries</label
+                  >
+                  <div id="supCoHint" class="hint">
+                    How many countries are your first-tier suppliers located in?
+                  </div>
+                  <input
+                    class="input"
+                    id="supCountries"
+                    name="supCountries"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    step="1"
+                    placeholder="e.g., 5"
+                    required
+                    aria-describedby="supCoHint supCoErr"
+                  />
+
+                  <div id="supCoErr" class="error" hidden></div>
+                </div>
+
+                <div>
+                  <label for="cusCountries"
+                    >First-tier customer countries</label
+                  >
+                  <div id="cusCoHint" class="hint">
+                    How many countries are your first-tier customers located in?
+                  </div>
+                  <input
+                    class="input"
+                    id="cusCountries"
+                    name="cusCountries"
+                    type="number"
+                    inputmode="numeric"
+                    min="0"
+                    step="1"
+                    placeholder="e.g., 10"
+                    required
+                    aria-describedby="cusCoHint cusCoErr"
+                  />
+
+                  <div id="cusCoErr" class="error" hidden></div>
+                </div>
               </div>
             </div>
 
             <div style="margin-top: 16px">
               <label for="tiers">Number of tiers (raw → end user)</label>
+              <div id="tierHint" class="hint">
+                How many supply chain tiers your company have? (≥ 1).
+              </div>
               <input
                 class="input"
                 id="tiers"
@@ -334,10 +409,7 @@
                 required
                 aria-describedby="tierHint tierErr"
               />
-              <div id="tierHint" class="hint">
-                Vertical complexity = number of sequential layers in your chain
-                (≥ 1).
-              </div>
+
               <div id="tierErr" class="error" hidden></div>
             </div>
 
@@ -357,31 +429,105 @@
           <div id="resultsEmpty" class="def">
             Enter values and click <b>Calculate</b> to see your metrics.<br />
             <b>Horizontal</b> counts suppliers + customers;
-            <b>Vertical</b> equals tiers.
+            <b>Vertical</b> equals tiers; <b>Spatial</b> counts supplier
+            countries + customer countries.
           </div>
-          <div id="results" style="display: none; gap: 12px; display: grid">
+          <div id="results" style="display: none; gap: 12px">
             <div class="kpi">
               <div class="label">Horizontal Complexity (C<sub>h</sub>)</div>
               <div class="value" id="outCh">—</div>
-              <div class="def">C<sub>h</sub> = suppliers + customers</div>
             </div>
             <div class="kpi">
               <div class="label">Vertical Complexity (C<sub>v</sub>)</div>
               <div class="value" id="outCv">—</div>
-              <div class="def">C<sub>v</sub> = number of tiers</div>
             </div>
             <div class="kpi">
-              <div class="label">Combined Index (C)</div>
-              <div class="value" id="outC">—</div>
-              <div class="def">C = C<sub>h</sub> + C<sub>v</sub></div>
+              <div class="label">Spatial Complexity (S<sub>c</sub>)</div>
+              <div class="value" id="outSc">—</div>
             </div>
+
             <div class="def" id="echo"></div>
+            <div style="margin-top: 16px">
+              <label for="industry">Benchmark industry</label>
+              <select
+                class="input"
+                id="industry"
+                name="industry"
+                aria-describedby="indHint"
+              >
+                <option value="">Select an industry…</option>
+                <option>Manufacture of beverages</option>
+                <option>Manufacture of tobacco products</option>
+                <option>Manufacture of textiles</option>
+                <option>Manufacture of wearing apparel</option>
+                <option>
+                  Manufacture of basic pharmaceutical products and
+                  pharmaceutical preparations
+                </option>
+                <option>Manufacture of rubber and plastic products</option>
+                <option>
+                  Manufacture of other non-metallic mineral products
+                </option>
+                <option>Manufacture of basic metals</option>
+                <option>Manufacture of furniture</option>
+                <option>Other manufacturing</option>
+                <option>
+                  Repair and installation of machinery and equipment
+                </option>
+                <option>
+                  Fabricated metal products, except machinery and transportation
+                  equipments
+                </option>
+                <option>
+                  Electricity, gas, steam and air conditioning supply
+                </option>
+                <option>
+                  Wholesale trade, except of motor vehicles and motorcycles
+                </option>
+                <option>
+                  Rental trade, except motor vehicles and motorcycles
+                </option>
+                <option>Transportation and warehousing</option>
+                <option>Land transport and transport via pipelines</option>
+                <option>Programming and broadcasting activities</option>
+                <option>
+                  Activities of head offices; management consultancy activities
+                </option>
+              </select>
+              <div id="indHint" class="hint">
+                Select an industry to view benchmark average complexity
+                measures.
+              </div>
+            </div>
+
             <div class="actions">
               <button class="btn" id="copyBtn" type="button">
                 Copy results
               </button>
             </div>
           </div>
+          <!-- Benchmark -->
+          <div id="benchmarkBox" style="margin-top: 14px; display: none">
+            <h4 style="margin: 0 0 8px 0">Benchmark (industry averages)</h4>
+
+            <div class="kpi" style="margin-bottom: 10px">
+              <div class="label">Benchmark Horizontal (C<sub>h</sub>)</div>
+              <div class="value" id="bCh">—</div>
+            </div>
+
+            <div class="kpi" style="margin-bottom: 10px">
+              <div class="label">Benchmark Vertical (C<sub>v</sub>)</div>
+              <div class="value" id="bCv">—</div>
+            </div>
+
+            <div class="kpi">
+              <div class="label">Benchmark Spatial (S<sub>c</sub>)</div>
+              <div class="value" id="bSc">—</div>
+            </div>
+
+            <div class="def" id="bIndustry" style="margin-top: 8px"></div>
+          </div>
+
           <div
             id="copyToast"
             class="pill"
@@ -394,18 +540,16 @@
 
       <footer>
         <div>
-          © <span id="year"></span> • SCAssessmenTool/iNEST Project
+          © <span id="year"></span> • SCAssessmentTool/iNEST Project
           Funding/Young Research/UNIBZ
         </div>
 
         <div>
           Contact:
           <a
-            href="mailto:your.name@domain.com
-  ?subject=Support%20request
-  &body=Hi%2C%0A%0AWe%27re%20using%20the%20complexity%20tool..."
-            >mteshome@unibz.it</a
-          >
+            href="mailto:mteshome@unibz.it?subject=Support%20request&body=Hi%2C%0A%0AWe%27re%20using%20the%20complexity%20tool..."
+            >mteshome@unibz.it
+          </a>
         </div>
       </footer>
     </div>
@@ -426,19 +570,122 @@
           min: 0,
           label: "First-tier customers",
         },
+
+        supCountries: {
+          el: $("#supCountries"),
+          err: $("#supCoErr"),
+          min: 0,
+          label: "First-tier supplier countries",
+        },
+        cusCountries: {
+          el: $("#cusCountries"),
+          err: $("#cusCoErr"),
+          min: 0,
+          label: "First-tier customer countries",
+        },
         tiers: { el: $("#tiers"), err: $("#tierErr"), min: 1, label: "Tiers" },
       };
       const resultsBox = $("#results");
       const resultsEmpty = $("#resultsEmpty");
       const outCh = $("#outCh"),
         outCv = $("#outCv"),
-        outC = $("#outC"),
+        outSc = $("#outSc"),
         echo = $("#echo");
+
       const copyBtn = $("#copyBtn"),
         toast = $("#copyToast");
       const sampleBtn = $("#sampleBtn");
+      const industrySel = $("#industry");
+      const benchmarkBox = $("#benchmarkBox");
+      const bCh = $("#bCh"),
+        bCv = $("#bCv"),
+        bSc = $("#bSc"),
+        bIndustry = $("#bIndustry");
 
       document.getElementById("year").textContent = new Date().getFullYear();
+      const BENCHMARKS = {
+        "Manufacture of beverages": { Ch: "71.50", Cv: "99.82", Sc: "30.25" },
+        "Manufacture of tobacco products": {
+          Ch: "131.62",
+          Cv: "165.39",
+          Sc: "46.84",
+        },
+        "Manufacture of textiles": { Ch: "194.65", Cv: "280.91", Sc: "64.43" },
+        "Manufacture of wearing apparel": {
+          Ch: "214.59",
+          Cv: "240.91",
+          Sc: "59.71",
+        },
+        "Manufacture of basic pharmaceutical products and pharmaceutical preparations":
+          {
+            Ch: "138.18",
+            Cv: "128.09",
+            Sc: "47.90",
+          },
+        "Manufacture of rubber and plastic products": {
+          Ch: "84.93",
+          Cv: "147.01",
+          Sc: "36.16",
+        },
+        "Manufacture of other non-metallic mineral products": {
+          Ch: "80.87",
+          Cv: "179.97",
+          Sc: "38.73",
+        },
+        "Manufacture of basic metals": {
+          Ch: "117.27",
+          Cv: "203.70",
+          Sc: "48.52",
+        },
+        "Manufacture of furniture": { Ch: "117.25", Cv: "122.67", Sc: "43.86" },
+        "Other manufacturing": { Ch: "113.77", Cv: "197.32", Sc: "33.69" },
+        "Repair and installation of machinery and equipment": {
+          Ch: "149.20",
+          Cv: "296.93",
+          Sc: "40.76",
+        },
+        "Fabricated metal products, except machinery and transportation equipments":
+          {
+            Ch: "112.65",
+            Cv: "242.71",
+            Sc: "41.28",
+          },
+        "Electricity, gas, steam and air conditioning supply": {
+          Ch: "168.06",
+          Cv: "325.96",
+          Sc: "47.70",
+        },
+        "Wholesale trade, except of motor vehicles and motorcycles": {
+          Ch: "147.9",
+          Cv: "203.34",
+          Sc: "65.90",
+        },
+        "Rental trade, except motor vehicles and motorcycles": {
+          Ch: "116.83",
+          Cv: "205.44",
+          Sc: "42.95",
+        },
+        "Transportation and warehousing": {
+          Ch: "74.80",
+          Cv: "124.87",
+          Sc: "28.97",
+        },
+        "Land transport and transport via pipelines": {
+          Ch: "253.27",
+          Cv: "360.60",
+          Sc: "82.73",
+        },
+        "Programming and broadcasting activities": {
+          Ch: "24.44",
+          Cv: "95.54",
+          Sc: "12.58",
+        },
+        "Activities of head offices; management consultancy activities": {
+          Ch: "471.375",
+          Cv: "116.12",
+          Sc: "72.00",
+        },
+      };
 
       function parseIntStrict(inputEl, min, label, errEl) {
         const raw = inputEl.value.trim();
@@ -464,27 +711,60 @@
         }
       }
 
+      function renderBenchmark() {
+        const key = industrySel.value.trim();
+        if (!key || !BENCHMARKS[key]) {
+          benchmarkBox.style.display = "none";
+          bCh.textContent = "—";
+          bCv.textContent = "—";
+          bSc.textContent = "—";
+          bIndustry.textContent = "";
+          return;
+        }
+
+        const m = BENCHMARKS[key];
+        benchmarkBox.style.display = "block";
+        bCh.textContent = m.Ch;
+        bCv.textContent = m.Cv;
+        bSc.textContent = m.Sc;
+        bIndustry.textContent = `Industry: ${key}`;
+      }
+
+      industrySel.addEventListener("change", renderBenchmark);
+
       function compute() {
         const s = parseIntStrict(
           fields.suppliers.el,
           fields.suppliers.min,
           fields.suppliers.label,
-          fields.suppliers.err
+          fields.suppliers.err,
         );
         const c = parseIntStrict(
           fields.customers.el,
           fields.customers.min,
           fields.customers.label,
-          fields.customers.err
+          fields.customers.err,
+        );
+        const scSup = parseIntStrict(
+          fields.supCountries.el,
+          fields.supCountries.min,
+          fields.supCountries.label,
+          fields.supCountries.err,
+        );
+        const scCus = parseIntStrict(
+          fields.cusCountries.el,
+          fields.cusCountries.min,
+          fields.cusCountries.label,
+          fields.cusCountries.err,
         );
         const t = parseIntStrict(
           fields.tiers.el,
           fields.tiers.min,
           fields.tiers.label,
-          fields.tiers.err
+          fields.tiers.err,
         );
 
-        if (!s.ok || !c.ok || !t.ok) {
+        if (!s.ok || !c.ok || !scSup.ok || !scCus.ok || !t.ok) {
           resultsBox.style.display = "none";
           resultsEmpty.style.display = "block";
           return;
@@ -492,12 +772,16 @@
 
         const Ch = s.value + c.value;
         const Cv = t.value;
-        const C = Ch + Cv;
+        const Sc = scSup.value + scCus.value;
 
         outCh.textContent = Ch;
         outCv.textContent = Cv;
-        outC.textContent = C;
-        echo.innerHTML = `Inputs → suppliers: <b>${s.value}</b>, customers: <b>${c.value}</b>, tiers: <b>${t.value}</b>.`;
+        outSc.textContent = Sc;
+
+        echo.innerHTML =
+          `Inputs → suppliers: <b>${s.value}</b>, customers: <b>${c.value}</b>, ` +
+          `supplier countries: <b>${scSup.value}</b>, customer countries: <b>${scCus.value}</b>, ` +
+          `tiers: <b>${t.value}</b>.`;
 
         resultsEmpty.style.display = "none";
         resultsBox.style.display = "grid";
@@ -520,6 +804,10 @@
           });
           resultsBox.style.display = "none";
           resultsEmpty.style.display = "block";
+
+          // Reset benchmark selection + UI
+          industrySel.value = "";
+          renderBenchmark();
         }, 0);
       });
 
@@ -528,20 +816,38 @@
         el.addEventListener("input", () => {
           if (Object.values(fields).every(({ el }) => el.value.trim() !== ""))
             compute();
-        })
+        }),
       );
 
       copyBtn.addEventListener("click", async () => {
+        const selectedIndustry = industrySel.value.trim();
+        const bench =
+          selectedIndustry && BENCHMARKS[selectedIndustry]
+            ? BENCHMARKS[selectedIndustry]
+            : null;
+
         const payload = {
           Ch: Number(outCh.textContent || 0),
           Cv: Number(outCv.textContent || 0),
-          C: Number(outC.textContent || 0),
+          Sc: Number(outSc.textContent || 0),
           inputs: {
             suppliers: Number(fields.suppliers.el.value || 0),
             customers: Number(fields.customers.el.value || 0),
+            supplierCountries: Number(fields.supCountries.el.value || 0),
+            customerCountries: Number(fields.cusCountries.el.value || 0),
             tiers: Number(fields.tiers.el.value || 0),
+            industry: selectedIndustry || null,
           },
+          benchmark: bench
+            ? {
+                industry: selectedIndustry,
+                Ch: Number(bench.Ch),
+                Cv: Number(bench.Cv),
+                Sc: Number(bench.Sc),
+              }
+            : null,
         };
+
         try {
           await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
           toast.textContent = "Copied!";
@@ -555,6 +861,8 @@
       sampleBtn.addEventListener("click", () => {
         fields.suppliers.el.value = 12;
         fields.customers.el.value = 8;
+        fields.supCountries.el.value = 5;
+        fields.cusCountries.el.value = 3;
         fields.tiers.el.value = 4;
         compute();
       });
